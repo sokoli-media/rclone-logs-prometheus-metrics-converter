@@ -23,7 +23,11 @@ jobs:
           mkdir -p build
           GOOS=linux GOARCH=amd64 go build -o build/rclone-logs-prometheus-metrics-converter-linux-amd64 .
 
-      - name: Release
-        uses: softprops/action-gh-release@v2
+      - name: Release nightly
+        uses: softprops/action-gh-release@v1
         with:
+          prerelease: true
+          name: nightly
+          tag_name: nightly
           files: build/rclone-logs-prometheus-metrics-converter-linux-amd64
+          fail_on_unmatched_files: true
