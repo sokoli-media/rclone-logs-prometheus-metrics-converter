@@ -14,6 +14,11 @@ func main() {
 
 	flag.Parse()
 
+	if *rCloneCommand == "" || *shareName == "" || *path == "" {
+		flag.PrintDefaults()
+		return
+	}
+
 	stats, err := converter.LoadRCloneStatsFromFile(*path)
 	if err != nil {
 		fmt.Printf("couldn't load stats: %s\n", err)
