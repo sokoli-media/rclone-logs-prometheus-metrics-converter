@@ -26,5 +26,5 @@ jobs:
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: rclone-logs-prometheus-metrics-converter-linux-amd64
-          path: build/rclone-logs-prometheus-metrics-converter-linux-amd64
+          name: builds
+          path: build/
