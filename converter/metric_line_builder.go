@@ -2,7 +2,6 @@ package converter
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"regexp"
 )
@@ -32,7 +31,7 @@ func dumpMetric(value any) []byte {
 func buildMetricLine(context MetricLineContext, metricName string, value any) (string, error) {
 	matched, err := regexp.MatchString("^[a-z_]+$", metricName)
 	if !matched {
-		return "", errors.New(fmt.Sprintf("metric name %s includes not allowed characters", metricName))
+		return "", fmt.Errorf("metric name %s includes not allowed characters", metricName)
 	}
 	if err != nil {
 		return "", err
