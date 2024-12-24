@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"regexp"
+	"strings"
 )
 
 type MetricLineContext struct {
@@ -37,6 +38,14 @@ func buildMetricLine(context MetricLineContext, metricName string, value any) (s
 		return "", err
 	}
 
+	fullMetricName := fmt.Sprintf("rclone_%s_%s", context.RCloneCommand, metricName)
 	dumpedValue := dumpMetric(value)
-	return fmt.Sprintf("rclone_%s_%s{share=\"%s\"} %s", context.RCloneCommand, metricName, context.ShareName, dumpedValue), nil
+
+	metricLines := []string{
+		fmt.Sprintf("# HELP %s Metric from rclone.", fullMetricName),
+		fmt.Sprintf("# TYPE %s gauge", fullMetricName),
+		fmt.Sprintf("%s{share=\"%s\"} %s", fullMetricName, context.ShareName, dumpedValue),
+	}
+
+	return strings.Join(metricLines, "\n"), nil
 }
