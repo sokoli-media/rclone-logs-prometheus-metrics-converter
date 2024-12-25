@@ -1,51 +1,57 @@
 package converter
 
 import (
-	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
-	"strings"
 )
+
+type MetricLine struct {
+	Name  string  `json:"name"`
+	Share string  `json:"share"`
+	Value float64 `json:"value"`
+}
 
 type MetricLineContext struct {
 	RCloneCommand string
 	ShareName     string
 }
 
-func dumpMetric(value any) []byte {
-	if boolValue, ok := value.(bool); ok {
-		if boolValue {
-			return []byte("1")
-		} else {
-			return []byte("0")
+func dumpMetric(value any) float64 {
+	switch v := value.(type) {
+	case int:
+		return float64(v)
+	case int64:
+		return float64(v)
+	case float32:
+		return float64(v)
+	case float64:
+		return v
+	case bool:
+		if v {
+			return 1.0
 		}
+		return 0.0
+	default:
+		panic(fmt.Sprintf("unknown type: %s", reflect.TypeOf(value)))
 	}
-
-	dumpedValue, err := json.Marshal(value)
-	if err != nil {
-		panic(err)
-	}
-
-	return dumpedValue
 }
 
-func buildMetricLine(context MetricLineContext, metricName string, value any) (string, error) {
+func buildMetricLine(context MetricLineContext, metricName string, value any) (*MetricLine, error) {
 	matched, err := regexp.MatchString("^[a-z_]+$", metricName)
 	if !matched {
-		return "", fmt.Errorf("metric name %s includes not allowed characters", metricName)
+		return nil, fmt.Errorf("metric name %s includes not allowed characters", metricName)
 	}
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	fullMetricName := fmt.Sprintf("rclone_%s_%s", context.RCloneCommand, metricName)
 	dumpedValue := dumpMetric(value)
 
-	metricLines := []string{
-		fmt.Sprintf("# HELP %s Metric from rclone.", fullMetricName),
-		fmt.Sprintf("# TYPE %s gauge", fullMetricName),
-		fmt.Sprintf("%s{share=\"%s\"} %s", fullMetricName, context.ShareName, dumpedValue),
-	}
-
-	return strings.Join(metricLines, "\n"), nil
+	return &MetricLine{
+		Name:  fullMetricName,
+		Share: context.ShareName,
+		Value: dumpedValue,
+	}, nil
 }

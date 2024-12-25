@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"rclone-logs-prometheus-metrics-converter/converter"
@@ -26,6 +27,9 @@ func main() {
 	}
 
 	for _, metric := range converter.StatsToMetrics(*rCloneCommand, *shareName, stats) {
-		fmt.Println(metric)
+		dumpedMetric, err := json.Marshal(metric)
+		if err == nil {
+			fmt.Println(string(dumpedMetric))
+		}
 	}
 }
